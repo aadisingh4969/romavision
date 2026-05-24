@@ -24,12 +24,8 @@
       padding-bottom: 20px;
       border-bottom: 1px solid #333;
     }
-    .sidebar ul {
-      list-style: none;
-    }
-    .sidebar ul li {
-      margin-bottom: 5px;
-    }
+    .sidebar ul { list-style: none; }
+    .sidebar ul li { margin-bottom: 5px; }
     .sidebar ul li a {
       display: block;
       padding: 12px 15px;
@@ -64,10 +60,7 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
       text-align: center;
     }
-    .stat-card .icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
+    .stat-card .icon { font-size: 40px; margin-bottom: 10px; }
     .stat-card .number {
       font-size: 32px;
       font-weight: bold;
@@ -88,20 +81,14 @@
       margin-bottom: 20px;
       color: #1a1a2e;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    table { width: 100%; border-collapse: collapse; }
     table th {
       background: #1a1a2e;
       color: white;
       padding: 12px;
       text-align: left;
     }
-    table td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-    }
+    table td { padding: 12px; border-bottom: 1px solid #eee; }
     table tr:hover { background: #f9f9f9; }
     .badge {
       padding: 4px 12px;
@@ -114,19 +101,38 @@
     .badge-delivered { background: #d4edda; color: #155724; }
     .badge-cancelled { background: #f8d7da; color: #721c24; }
 
+    /* Hamburger Button */
+    .hamburger {
+      display: none;
+      font-size: 18px;
+      cursor: pointer;
+      background: #1a1a2e;
+      color: #f0a500;
+      border: none;
+      padding: 15px 20px;
+      width: 100%;
+      text-align: left;
+      font-weight: bold;
+    }
+
     @media(max-width: 768px) {
+      .hamburger { display: block; }
       .admin-layout { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .sidebar { display: none; }
+      .sidebar.open { display: block; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
 
+  <!-- Hamburger Button (Mobile) -->
+  <button class="hamburger" onclick="toggleSidebar()">☰ Admin Menu</button>
+
   <div class="admin-layout">
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
       <div class="logo">⚡ Romavision Admin</div>
       <ul>
         <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
@@ -190,19 +196,21 @@
 
   <script src="../js/main.js"></script>
   <script>
-    // Check Admin Access
+    const toggleSidebar = () => {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    };
+
     const checkAdmin = () => {
       if (!isLoggedIn() || !isAdmin()) {
         window.location.href = '../login.html';
       }
     };
 
-    // Load Stats
     const loadStats = async () => {
       try {
         const response = await authFetch(`${API_URL}/admin/stats`);
         const stats = await response.json();
-
         document.getElementById('total-users').textContent = stats.totalUsers;
         document.getElementById('total-products').textContent = stats.totalProducts;
         document.getElementById('total-orders').textContent = stats.totalOrders;
@@ -212,7 +220,6 @@
       }
     };
 
-    // Load Recent Orders
     const loadRecentOrders = async () => {
       try {
         const response = await authFetch(`${API_URL}/orders`);

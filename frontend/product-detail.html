@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Detail - Romavision</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .product-detail {
+      padding: 40px 20px;
+    }
+    .product-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .product-detail-grid img {
+      width: 100%;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #f9f9f9;
+      height: 400px;
+    }
+    .product-info h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #1a1a2e;
+    }
+    .product-info .category {
+      color: #888;
+      margin-bottom: 15px;
+    }
+    .product-info .price {
+      font-size: 32px;
+      color: #f0a500;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .product-info .discount {
+      text-decoration: line-through;
+      color: #888;
+      font-size: 18px;
+      margin-left: 10px;
+    }
+    .product-info .description {
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .product-info .stock {
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .stock-in { color: green; }
+    .stock-out { color: red; }
+    .specs {
+      margin-bottom: 20px;
+    }
+    .specs h3 {
+      margin-bottom: 10px;
+      color: #1a1a2e;
+    }
+    .specs table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .specs table td {
+      padding: 8px;
+      border: 1px solid #ddd;
+    }
+    .specs table td:first-child {
+      font-weight: bold;
+      background: #f9f9f9;
+      width: 40%;
+    }
+    .buttons {
+      display: flex;
+      gap: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">⚡ Romavision</div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="products.html">Products</a></li>
+      <li><a href="cart.html">Cart 🛒 <span id="cart-count">0</span></a></li>
+      <li id="auth-link"><a href="login.html">Login</a></li>
+    </ul>
+  </nav>
+
+  <!-- Product Detail -->
+  <div class="product-detail">
+    <div class="container">
+      <div id="alert" class="alert" style="display:none;"></div>
+      <div id="product-container">
+        <p style="text-align:center;">Loading product...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2024 Romavision. All rights reserved.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Load Product Detail
+    const loadProduct = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('id');
+
+      if (!productId) {
+        window.location.href = 'products.html';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/products/${productId}`);
+        const product = await response.json();
+
+        document.title = `${product.name} - Romavision`;
+
+        const specs = product.specifications ?
+          Object.entries(product.specifications).map(([key, value]) =>
+            `<tr><td>${key}</td><td>${value}</td></tr>`
+          ).join('') : '';
+
+        document.getElementById('product-container').innerHTML = `
+          <div class="product-detail-grid">
+            <div>
+              <img src="${product.images[0] || 'https://placehold.co/400x400'}" 
+                   alt="${product.name}">
+            </div>
+            <div class="product-info">
+              <h1>${product.name}</h1>
+              <div class="category">Category: ${product.category?.name || 'N/A'}</div>
+              <div class="price">
+                ${formatPrice(product.price)}
+                ${product.discountPrice ? 
+                  `<span class="discount">${formatPrice(product.discountPrice)}</span>` : ''}
+              </div>
+              <div class="description">${product.description}</div>
+              <div class="stock">
+                Stock: 
+                <span class="${product.stock > 0 ? 'stock-in' : 'stock-out'}">
+                  ${product.stock > 0 ? `${product.stock} Available` : 'Out of Stock'}
+                </span>
+              </div>
+              ${specs ? `
+                <div class="specs">
+                  <h3>Specifications</h3>
+                  <table>${specs}</table>
+                </div>
+              ` : ''}
+              <div class="buttons">
+                <button class="btn btn-primary" style="flex:1"
+                  onclick="addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})"
+                  ${product.stock === 0 ? 'disabled' : ''}>
+                  🛒 Add to Cart
+                </button>
+                <button class="btn" style="flex:1; background:#1a1a2e; color:white;"
+                  onclick="window.location.href='cart.html'">
+                  View Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading product:', error);
+      }
+    };
+
+    // Update Auth Link
+    const updateAuthLink = () => {
+      const authLink = document.getElementById('auth-link');
+      if (isLoggedIn()) {
+        const user = getUser();
+        authLink.innerHTML = `<a href="#" onclick="logout()">Logout (${user.name})</a>`;
+      }
+    };
+
+    loadProduct();
+    updateAuthLink();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Romavision</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">⚡ Romavision</div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="products.html">Products</a></li>
+      <li><a href="cart.html">Cart 🛒 <span id="cart-count">0</span></a></li>
+    </ul>
+  </nav>
+
+  <!-- Register Form -->
+  <div class="form-container">
+    <h2>Create Account</h2>
+    <div id="alert" class="alert" style="display:none;"></div>
+
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="name" placeholder="Enter your full name">
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Enter your email">
+    </div>
+
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="text" id="phone" placeholder="Enter your phone number">
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password">
+    </div>
+
+    <button class="btn btn-primary" style="width:100%" onclick="registerUser()">
+      Register
+    </button>
+
+    <p style="text-align:center; margin-top:20px;">
+      Already have an account? <a href="login.html" style="color:#f0a500;">Login here</a>
+    </p>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    const registerUser = async () => {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const password = document.getElementById('password').value;
+
+      if (!name || !email || !phone || !password) {
+        showAlert('Please fill in all fields!', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          saveAuth(data, data.token);
+          showAlert('Registration successful!', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1000);
+        } else {
+          showAlert(data.message, 'error');
+        }
+
+      } catch (error) {
+        showAlert('Something went wrong!', 'error');
+      }
+    };
+  </script>
+
+</body>
+</html>

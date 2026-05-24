@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - Romavision</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .products-section {
+      padding: 40px 20px;
+    }
+    .filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filters input {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 15px;
+      flex: 1;
+    }
+    .filters select {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+    .product-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .product-card:hover { transform: translateY(-5px); }
+    .product-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: contain;
+      background: #f0f0f0;
+    }
+    .product-body { padding: 15px; }
+    .product-body h3 { margin-bottom: 8px; }
+    .product-body .price {
+      color: #f0a500;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .product-body .category {
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .product-body .buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .no-products {
+      text-align: center;
+      grid-column: 1/-1;
+      padding: 50px;
+      color: #888;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">⚡ Romavision</div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="products.html">Products</a></li>
+      <li><a href="cart.html">Cart 🛒 <span id="cart-count">0</span></a></li>
+      <li id="auth-link"><a href="login.html">Login</a></li>
+    </ul>
+  </nav>
+
+  <!-- Products Section -->
+  <div class="products-section">
+    <div class="container">
+      <h2 style="margin-bottom:30px; color:#1a1a2e;">Our Products</h2>
+
+      <!-- Filters -->
+      <div class="filters">
+        <input type="text" id="search" placeholder="🔍 Search products..." oninput="filterProducts()">
+        <select id="category-filter" onchange="filterProducts()">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="grid-4" id="products-grid">
+        <div class="no-products">Loading products...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2024 Romavision. All rights reserved.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    let allProducts = [];
+
+    // Load Categories for Filter
+    const loadCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/categories`);
+        const categories = await response.json();
+        const select = document.getElementById('category-filter');
+        categories.forEach(cat => {
+          select.innerHTML += `<option value="${cat._id}">${cat.name}</option>`;
+        });
+
+        // Check if category param in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('category');
+        if (categoryId) {
+          select.value = categoryId;
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    };
+
+    // Load All Products
+    const loadProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products`);
+        allProducts = await response.json();
+        displayProducts(allProducts);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
+
+    // Display Products
+    const displayProducts = (products) => {
+      const grid = document.getElementById('products-grid');
+      if (products.length === 0) {
+        grid.innerHTML = '<div class="no-products">No products found!</div>';
+        return;
+      }
+      grid.innerHTML = products.map(product => `
+        <div class="product-card">
+          <img src="${product.images[0] || 'https://placehold.co/300x200'}" 
+               alt="${product.name}">
+          <div class="product-body">
+            <h3>${product.name}</h3>
+            <div class="category">${product.category?.name || ''}</div>
+            <div class="price">${formatPrice(product.price)}</div>
+            <div class="buttons">
+              <button class="btn btn-primary" style="flex:1"
+                onclick="window.location.href='product-detail.html?id=${product._id}'">
+                View
+              </button>
+              <button class="btn btn-primary" style="flex:1"
+                onclick="addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    // Filter Products
+    const filterProducts = () => {
+      const search = document.getElementById('search').value.toLowerCase();
+      const category = document.getElementById('category-filter').value;
+
+      let filtered = allProducts;
+
+      if (search) {
+        filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
+      }
+
+      if (category) {
+        filtered = filtered.filter(p => p.category?._id === category);
+      }
+
+      displayProducts(filtered);
+    };
+
+    // Update Auth Link
+    const updateAuthLink = () => {
+      const authLink = document.getElementById('auth-link');
+      if (isLoggedIn()) {
+        const user = getUser();
+        authLink.innerHTML = `<a href="#" onclick="logout()">Logout (${user.name})</a>`;
+      }
+    };
+
+    loadCategories();
+    loadProducts();
+    updateAuthLink();
+  </script>
+
+</body>
+</html>

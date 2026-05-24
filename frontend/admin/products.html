@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Products - Romavision</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: #1a1a2e;
+      padding: 20px;
+      color: white;
+    }
+    .sidebar .logo {
+      font-size: 22px;
+      font-weight: bold;
+      color: #f0a500;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #333;
+    }
+    .sidebar ul { list-style: none; }
+    .sidebar ul li { margin-bottom: 5px; }
+    .sidebar ul li a {
+      display: block;
+      padding: 12px 15px;
+      color: #ccc;
+      border-radius: 5px;
+      transition: all 0.3s;
+    }
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: #f0a500;
+      color: white;
+    }
+    .main-content {
+      padding: 30px;
+      background: #f5f5f5;
+    }
+    .main-content h2 {
+      margin-bottom: 30px;
+      color: #1a1a2e;
+    }
+    .add-product-form {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    .add-product-form h3 {
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .products-table {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .products-table h3 {
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th {
+      background: #1a1a2e;
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+    table td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    table tr:hover { background: #f9f9f9; }
+    table td img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    @media(max-width: 768px) {
+      .admin-layout { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">⚡ Romavision Admin</div>
+      <ul>
+        <li><a href="dashboard.html">📊 Dashboard</a></li>
+        <li><a href="products.html" class="active">📦 Products</a></li>
+        <li><a href="categories.html">🗂️ Categories</a></li>
+        <li><a href="orders.html">🛒 Orders</a></li>
+        <li><a href="../index.html">🌐 View Website</a></li>
+        <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <h2>📦 Manage Products</h2>
+      <div id="alert" class="alert" style="display:none;"></div>
+
+      <!-- Add Product Form -->
+      <div class="add-product-form">
+        <h3>➕ Add New Product</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" id="name" placeholder="Enter product name">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="category" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:5px;">
+              <option value="">Select Category</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="description" rows="3"
+            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:5px;"
+            placeholder="Enter product description"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Price (₹)</label>
+            <input type="number" id="price" placeholder="Enter price">
+          </div>
+          <div class="form-group">
+            <label>Stock</label>
+            <input type="number" id="stock" placeholder="Enter stock quantity">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Brand</label>
+            <input type="text" id="brand" placeholder="Enter brand name">
+          </div>
+          <div class="form-group">
+            <label>Product Image</label>
+            <input type="file" id="image" accept="image/*"
+              style="padding:10px; border:1px solid #ddd; border-radius:5px; width:100%;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="isFeatured"> Mark as Featured Product
+          </label>
+        </div>
+        <button class="btn btn-primary" onclick="addProduct()">
+          ➕ Add Product
+        </button>
+      </div>
+
+      <!-- Products Table -->
+      <div class="products-table">
+        <h3>📋 All Products</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Featured</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-tbody">
+            <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    const checkAdmin = () => {
+      if (!isLoggedIn() || !isAdmin()) {
+        window.location.href = '../login.html';
+      }
+    };
+
+    const loadCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/categories`);
+        const categories = await response.json();
+        const select = document.getElementById('category');
+        categories.forEach(cat => {
+          select.innerHTML += `<option value="${cat._id}">${cat.name}</option>`;
+        });
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    };
+
+    const loadProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products`);
+        const products = await response.json();
+        const tbody = document.getElementById('products-tbody');
+
+        if (products.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No products yet</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = products.map(product => `
+          <tr>
+            <td>
+              <img src="${product.images[0] || 'https://placehold.co/50x50'}"
+                   alt="${product.name}">
+            </td>
+            <td>${product.name}</td>
+            <td>${product.category?.name || 'N/A'}</td>
+            <td>${formatPrice(product.price)}</td>
+            <td>${product.stock}</td>
+            <td>${product.isFeatured ? '✅' : '❌'}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-danger"
+                  onclick="deleteProduct('${product._id}')">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
+
+    const uploadImage = async (imageFile) => {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      const uploadResponse = await fetch(`${API_URL}/products/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+        body: formData
+      });
+      const uploadData = await uploadResponse.json();
+      return uploadData.imageUrl || '';
+    };
+
+    const addProduct = async () => {
+      const name = document.getElementById('name').value;
+      const description = document.getElementById('description').value;
+      const price = document.getElementById('price').value;
+      const stock = document.getElementById('stock').value;
+      const category = document.getElementById('category').value;
+      const brand = document.getElementById('brand').value;
+      const isFeatured = document.getElementById('isFeatured').checked;
+      const imageFile = document.getElementById('image').files[0];
+
+      if (!name || !description || !price || !stock || !category) {
+        showAlert('Please fill in all required fields!', 'error');
+        return;
+      }
+
+      let imageUrl = '';
+
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+        if (!imageUrl) {
+          showAlert('Image upload failed!', 'error');
+          return;
+        }
+      }
+
+      try {
+        const response = await authFetch(`${API_URL}/products`, {
+          method: 'POST',
+          body: JSON.stringify({
+            name,
+            description,
+            price: Number(price),
+            stock: Number(stock),
+            category,
+            brand,
+            isFeatured,
+            images: imageUrl ? [imageUrl] : []
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showAlert('Product added successfully!', 'success');
+          loadProducts();
+          document.getElementById('name').value = '';
+          document.getElementById('description').value = '';
+          document.getElementById('price').value = '';
+          document.getElementById('stock').value = '';
+          document.getElementById('brand').value = '';
+          document.getElementById('image').value = '';
+          document.getElementById('isFeatured').checked = false;
+        } else {
+          showAlert(data.message, 'error');
+        }
+      } catch (error) {
+        showAlert('Something went wrong!', 'error');
+        console.error(error);
+      }
+    };
+
+    const deleteProduct = async (productId) => {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+
+      try {
+        const response = await authFetch(`${API_URL}/products/${productId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showAlert('Product deleted successfully!', 'success');
+          loadProducts();
+        }
+      } catch (error) {
+        showAlert('Something went wrong!', 'error');
+      }
+    };
+
+    checkAdmin();
+    loadCategories();
+    loadProducts();
+  </script>
+
+</body>
+</html>
